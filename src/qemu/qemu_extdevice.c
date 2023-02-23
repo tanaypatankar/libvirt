@@ -106,6 +106,9 @@ qemuExtDevicesPrepareHost(virQEMUDriverPtr driver,
 {
     int ret = 0;
 
+    if (qemuExtDevicesInitPaths(driver, def) < 0)
+        return -1;
+
     if (def->tpm)
         ret = qemuExtTPMPrepareHost(driver, def);
 
@@ -132,9 +135,6 @@ qemuExtDevicesStart(virQEMUDriverPtr driver,
                     bool incomingMigration)
 {
     int ret = 0;
-
-    if (qemuExtDevicesInitPaths(driver, vm->def) < 0)
-        return -1;
 
     if (vm->def->tpm)
         ret = qemuExtTPMStart(driver, vm, logCtxt, incomingMigration);
