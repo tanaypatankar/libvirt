@@ -13078,6 +13078,7 @@ virDomainTPMDefParseXML(virDomainXMLOptionPtr xmlopt,
     VIR_AUTOFREE(char *) backend = NULL;
     VIR_AUTOFREE(char *) version = NULL;
     VIR_AUTOFREE(char *) secretuuid = NULL;
+    VIR_AUTOFREE(char *) persistent_state = NULL;
     VIR_AUTOFREE(xmlNodePtr *) backends = NULL;
 
     if (VIR_ALLOC(def) < 0)
@@ -13150,6 +13151,15 @@ virDomainTPMDefParseXML(virDomainXMLOptionPtr xmlopt,
                 goto error;
             }
             def->data.emulator.hassecretuuid = true;
+        }
+        persistent_state = virXMLPropString(backends[0], "persistent_state");
+        if (persistent_state) {
+            if (virStringParseYesNo(persistent_state,
+                                    &def->data.emulator.persistent_state) < 0) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("Invalid persistent_state value, either 'yes' or 'no'"));
+                goto error;
+            }
         }
         break;
     case VIR_DOMAIN_TPM_TYPE_LAST:
@@ -25979,6 +25989,8 @@ virDomainTPMDefFormat(virBufferPtr buf,
     case VIR_DOMAIN_TPM_TYPE_EMULATOR:
         virBufferAsprintf(buf, " version='%s'",
                           virDomainTPMVersionTypeToString(def->version));
+        if (def->data.emulator.persistent_state)
+            virBufferAddLit(buf, " persistent_state='yes'");
         if (def->data.emulator.hassecretuuid) {
             char uuidstr[VIR_UUID_STRING_BUFLEN];
             virBufferAddLit(buf, ">\n");

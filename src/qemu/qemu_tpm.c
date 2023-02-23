@@ -809,7 +809,8 @@ qemuExtTPMCleanupHost(virDomainDefPtr def)
 {
     switch (def->tpm->type) {
     case VIR_DOMAIN_TPM_TYPE_EMULATOR:
-        qemuTPMDeleteEmulatorStorage(def->tpm);
+        if (!def->tpm->data.emulator.persistent_state)
+            qemuTPMDeleteEmulatorStorage(def->tpm);
         break;
     case VIR_DOMAIN_TPM_TYPE_PASSTHROUGH:
     case VIR_DOMAIN_TPM_TYPE_LAST:
